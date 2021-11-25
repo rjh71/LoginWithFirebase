@@ -22,6 +22,7 @@ public class LoginActivity extends AppCompatActivity {
     private FirebaseAuth mFirebaseAuth; // 파이어베이스 인증
     private DatabaseReference mDatabaseRef; // 실시간 데이터베이스
     private EditText mEtEmail, mEtPwd;      //  로그인 입력필드
+    private Button loginBtn;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,12 +33,11 @@ public class LoginActivity extends AppCompatActivity {
         mDatabaseRef = FirebaseDatabase.getInstance().getReference("hongdroid");
 
         mEtEmail = findViewById(R.id.et_email);
-        mEtEmail = findViewById(R.id.et_pwd);
+        mEtPwd = findViewById(R.id.et_pwd);
+        loginBtn = findViewById(R.id.btn_login);
 
 
-
-        Button btn_login = findViewById(R.id.btn_register);
-        btn_login.setOnClickListener(new View.OnClickListener() {
+        loginBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 //로그인 요청

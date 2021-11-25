@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -13,6 +14,8 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseAuthUserCollisionException;
+import com.google.firebase.auth.FirebaseAuthWeakPasswordException;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
@@ -33,7 +36,7 @@ public class RegisterActivity extends AppCompatActivity {
         mDatabaseRef = FirebaseDatabase.getInstance().getReference("hongdroid");
 
         mEtEmail = findViewById(R.id.et_email);
-        mEtEmail = findViewById(R.id.et_pwd);
+        mEtPwd = findViewById(R.id.et_pwd);
         mBtnRegister = findViewById(R.id.btn_register);
 
         mBtnRegister.setOnClickListener(new View.OnClickListener() {
@@ -47,7 +50,7 @@ public class RegisterActivity extends AppCompatActivity {
                 mFirebaseAuth.createUserWithEmailAndPassword(strEmail, strPwd).addOnCompleteListener(RegisterActivity.this, new OnCompleteListener<AuthResult>() {
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
-                        if(task.isSuccessful()) {
+                        if(task.isSuccessful()) { //얘가 에러 안나면 들어가지는 곳
                             FirebaseUser firebaseUser = mFirebaseAuth.getCurrentUser();
 
                             UserAccount account = new UserAccount();
@@ -59,8 +62,18 @@ public class RegisterActivity extends AppCompatActivity {
                             mDatabaseRef.child("UserAccount").child(firebaseUser.getUid()).setValue(account);
 
                             Toast.makeText(RegisterActivity.this, "회원가입에 성공하셨습니다", Toast.LENGTH_SHORT).show();
-                        } else {
-                            Toast.makeText(RegisterActivity.this, "회원가입에 실패하셨습니다", Toast.LENGTH_SHORT).show();
+                            finish();
+                        } else { //얘가 에러 나면 들어가지는곳
+                            Log.d("Login error", task.getException().toString()); //얘가 무슨 에러인지 알려줄거임 Logcat에서 확인
+                            try { //무슨 에러 뜨는지 볼라고
+                                throw task.getException(); //getException 을 받아오는거임 getException 이 무슨 에러인지 받아와줌
+                            } catch (FirebaseAuthWeakPasswordException e) {
+                                Toast.makeText(RegisterActivity.this, "비밀번호 6자리 이상 입력", Toast.LENGTH_SHORT).show();
+                            } catch (FirebaseAuthUserCollisionException e) {
+                                Toast.makeText(RegisterActivity.this, "이미 있음 다른 아이디 ㄱㄱ", Toast.LENGTH_SHORT).show();
+                            } catch (Exception e) {
+                                Toast.makeText(RegisterActivity.this, "이메일 또는 비밀번호를 다시 입력하세요 (에러처리안한거임ㅋㅋ)", Toast.LENGTH_SHORT).show();
+                            }
                         }
                     }
                 });
